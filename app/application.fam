@@ -1,0 +1,19 @@
+App(
+    appid="nixie",
+    name="Nixie Clock",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="nixie_app",
+    # The frame buffer and the instance live on the heap; the stack carries
+    # the event loop, one LocalTime and the renderer's locals.
+    stack_size=3 * 1024,
+    # "Examples" keeps this out of the firmware image - see applications/external/life.
+    fap_category="Examples",
+    fap_filename="Nixie",
+    fap_version=(1, 0),
+    fap_icon="nixie_10x10.png",
+    # Bundled into the .fap and extracted to /ext/apps_assets/<fap_filename>/,
+    # which is what gives dialog_set_icon() a path to this app's own icon.
+    fap_file_assets="assets",
+    sources=["nixie.c", "nixie_render.c"],
+    targets=["f22"],
+)

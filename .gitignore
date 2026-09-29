@@ -1,0 +1,6 @@
+build/
+dist/
+app/tests/nixie_render_test
+app/tests/*.ppm
+app/tests/*.png
+.DS_Store

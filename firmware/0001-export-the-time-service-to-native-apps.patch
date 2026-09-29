@@ -1,0 +1,90 @@
+From b5bea0b0997c5851f8b7aefe7def9a73a5c440b7 Mon Sep 17 00:00:00 2001
+From: negenii <ikra.ad@mac.com>
+Date: Tue, 29 Sep 2026 15:44:55 +0100
+Subject: [PATCH] Export the time service to native apps
+
+No FAP could ask what time it is: time.h was not among the SDK headers,
+so the loader had nothing to bind time_get_local_time() to. List it and
+the settings headers it includes, and approve the four read-only calls;
+time_set_settings and the settings state stay disabled, since a clock
+app has no business moving the clock. API 7.1 -> 7.2, a minor bump, so
+every .fap built against 7.1 still loads.
+
+Two of the settings headers had no include guard, which the SDK amalgam
+needs to compile.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01F1fYbUWSzkcffyMenDAnxN
+---
+ applications/services/time/application.fam         |  8 ++++++++
+ applications/services/time/settings/interface_v1.h |  2 ++
+ targets/f21/api_symbols.csv                        | 12 +++++++++++-
+ 3 files changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/applications/services/time/application.fam b/applications/services/time/application.fam
+index 494b87d1..be4a6abf 100644
+--- a/applications/services/time/application.fam
++++ b/applications/services/time/application.fam
+@@ -8,6 +8,14 @@ App(
+     order=150,
+     targets=["f20", "f21", "f22"],
+     provides=["cli_date", "cli_timezone"],
++    # Exported to FAPs so a native app can ask what time it is. Everything
++    # time.h drags in has to be listed too, or the SDK tree cannot compile it.
++    sdk_headers=[
++        "time.h",
++        "settings/settings.h",
++        "settings/interface_v1.h",
++        "settings/time_format.h",
++    ],
+     sources=[
+         "settings/interface_v1.c",
+         "settings/settings.c",
+diff --git a/applications/services/time/settings/interface_v1.h b/applications/services/time/settings/interface_v1.h
+index 924baf56..1fec0412 100644
+--- a/applications/services/time/settings/interface_v1.h
++++ b/applications/services/time/settings/interface_v1.h
+@@ -1,3 +1,5 @@
++#pragma once
++
+ #include "time_format.h"
+ 
+ #include <setting_provider/setting_provider.h>
+diff --git a/targets/f21/api_symbols.csv b/targets/f21/api_symbols.csv
+index 4d740b02..d430a588 100644
+--- a/targets/f21/api_symbols.csv
++++ b/targets/f21/api_symbols.csv
+@@ -1,5 +1,5 @@
+ entry,status,name,type,params
+-Version,+,7.1,,
++Version,+,7.2,,
+ Header,+,applications/services/audio/audio.h,,
+ Header,+,applications/services/gui/gui.h,,
+ Header,+,applications/services/gui/modules/anim_menu.h,,
+@@ -31,6 +31,10 @@ Header,+,applications/services/input/input.h,,
+ Header,+,applications/services/loader/firmware_api/compiler_runtime.h,,
+ Header,+,applications/services/log_storage/log_storage.h,,
+ Header,+,applications/services/power/power_service/power.h,,
++Header,+,applications/services/time/settings/interface_v1.h,,
++Header,+,applications/services/time/settings/settings.h,,
++Header,+,applications/services/time/settings/time_format.h,,
++Header,+,applications/services/time/time.h,,
+ Header,+,lib/bit_lib/bit_lib.h,,
+ Header,+,lib/datetime/datetime.h,,
+ Header,+,lib/flipper_application/api_hashtable/api_hashtable.h,,
+@@ -2119,6 +2123,12 @@ Function,-,tgamma,double,double
+ Function,-,tgammaf,float,float
+ Function,-,tgammal,long double,long double
+ Function,-,time,time_t,time_t*
++Function,+,time_get_local_time,LocalTime,Time*
++Function,+,time_get_settings,void,"const Time*, TimeSettings*"
++Function,-,time_get_settings_state,FuriState*,Time*
++Function,+,time_get_timestamp,time_t,
++Function,+,time_get_timestamp_ms,time_t,
++Function,-,time_set_settings,_Bool,"Time*, const TimeSettings*"
+ Function,-,timingsafe_bcmp,int,"const void*, const void*, size_t"
+ Function,-,timingsafe_memcmp,int,"const void*, const void*, size_t"
+ Function,+,title_card_alloc,TitleCard*,Widget*
+-- 
+2.54.0 (Apple Git-157)
+

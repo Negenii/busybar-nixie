@@ -28,10 +28,12 @@ exported to native apps (a [three-file change](firmware/0001-export-the-time-ser
 API 7.1 to 7.2). Until it lands in a VeryBUSY release, the
 [release](../../releases) carries a firmware build that includes it. So:
 
-1. Flash `VeryBUSY-r7-fix3-f22-update.tgz` from the release: on the bar's Web
+1. Flash `VeryBUSY-r7-fix5-f22-update.tgz` from the release: on the bar's Web
    UI, Settings, Update, upload the file. It is VeryBUSY r7 plus the export
-   plus a fix for a timer restart loop with the cloud linked
-   ([PR #1](https://code.mccullough.dev/christian/VeryBUSY/pulls/1)). Your
+   plus two fixes: a timer restart loop with the cloud linked
+   ([PR #1](https://code.mccullough.dev/christian/VeryBUSY/pulls/1)) and
+   resuming the last app from the Apps switch position
+   ([PR #3](https://code.mccullough.dev/christian/VeryBUSY/pulls/3)). Your
    apps and settings stay.
 2. Upload `Nixie.fap` on the Apps tab (drag and drop), or over HTTP:
 

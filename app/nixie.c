@@ -497,7 +497,7 @@ static void nixie_settings_init(Nixie* instance) {
     instance->settings.top = 0U;
 }
 
-static Nixie* nixie_alloc(void) {
+static Nixie* nixie_alloc(bool skip_menu) {
     Nixie* instance = malloc(sizeof(Nixie));
     memset(instance, 0, sizeof(Nixie));
 
@@ -545,7 +545,11 @@ static Nixie* nixie_alloc(void) {
         instance->back_widget = instance->chrome.back_window;
     });
 
-    nixie_show_menu(instance);
+    if(skip_menu) {
+        nixie_enter_run(instance);
+    } else {
+        nixie_show_menu(instance);
+    }
 
     return instance;
 }
@@ -577,12 +581,31 @@ static void nixie_free(Nixie* instance) {
     free(instance);
 }
 
+/* "-s" (or "--skip-menu"): straight to the clock. The Apps menu passes it when
+ * it resumes the app it remembers, so flipping the mode switch back to Apps
+ * brings the clock back without the Start screen. Same flag as the built-in
+ * Clock. */
+static bool nixie_wants_skip_menu(const char* args) {
+    if(!args) return false;
+    while(*args) {
+        while(*args == ' ') args++;
+        const char* end = args;
+        while(*end && (*end != ' ')) end++;
+        const size_t len = (size_t)(end - args);
+        if(((len == 2) && (strncmp(args, "-s", 2) == 0)) ||
+           ((len == 11) && (strncmp(args, "--skip-menu", 11) == 0))) {
+            return true;
+        }
+        args = end;
+    }
+    return false;
+}
+
 int32_t nixie_app(void* arg) {
-    UNUSED(arg);
 
     FURI_LOG_I(TAG, "Nixie started");
 
-    Nixie* instance = nixie_alloc();
+    Nixie* instance = nixie_alloc(nixie_wants_skip_menu((const char*)arg));
     furi_event_loop_run(instance->event_loop);
     nixie_free(instance);
 
